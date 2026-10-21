@@ -26,7 +26,7 @@ if "estado_final" not in st.session_state:
 
 # Generar datos por defecto para evitar campos vacíos al cargar la app
 if "estudiantes_raw" not in st.session_state:
-    st.session_state.estudiantes_raw = {cat: ", ".join([f"Estudiante {i} {cat}" for i in range(1, 11)]) for cat in CATEGORIAS}
+    st.session_state.estudiantes_raw = {cat: ", ".join([f"Estudiante {i}" for i in range(1, 11)]) for cat in CATEGORIAS}
 
 # Palabras base preestablecidas de ejemplo
 if "palabras_raw" not in st.session_state:
@@ -40,7 +40,7 @@ if "palabras_raw" not in st.session_state:
         st.session_state.palabras_raw[cat] = {dif: ejemplos[dif] for dif in DIFICULTADES}
 
 # 3. CREACIÓN DE PESTAÑAS DE CONTROL
-tab_juego, tab_config = st.tabs(["Anclaje 🎮 PANTALLA DEL CONCURSO", "⚙️ CONFIGURACIÓN Y CARGA DE DATOS"])
+tab_juego, tab_config = st.tabs(["🎮 PANTALLA DEL CONCURSO", "⚙️ CONFIGURACIÓN Y CARGA DE DATOS"])
 
 with tab_config:
     st.header("⚙️ Centro de Carga Masiva (Estudiantes y Palabras)")
@@ -71,7 +71,7 @@ with tab_config:
         st.session_state.estudiantes_raw[cat_editar] = st.text_area(
             f"Lista de alumnos ({cat_editar}):", 
             value=st.session_state.estudiantes_raw[cat_editar], 
-            height=100, label_visibility="collapsed"
+            height=120, label_visibility="collapsed"
         )
         # Procesar estudiantes
         lista_alumnos = [a.strip() for a in st.session_state.estudiantes_raw[cat_editar].split(",") if a.strip()]
@@ -112,7 +112,7 @@ with tab_juego:
         banco_activo = [p.strip().upper() for p in palabras_filtradas_raw.split(",") if p.strip()]
         
         # Filtrar las palabras que ya salieron en esta categoría y dificultad
-        historial_palabras_usadas = [h[0] for h in st.session_state.historial if h[1] == cat_activa and h[2] == dif_activa]
+        historial_palabras_usadas = [p for p in st.session_state.historial if p == cat_activa and p == dif_activa]
         palabras_disponibles = [p for p in banco_activo if p not in historial_palabras_usadas]
         
         st.write(f"Palabras disponibles en esta dificultad: **{len(palabras_disponibles)}**")
@@ -121,7 +121,7 @@ with tab_juego:
             if palabras_disponibles:
                 st.session_state.estado_final = ""  # Limpiar pantalla
                 placeholder = st.empty()
-                # Efecto visual
+                # Efecto visual de giro rápido
                 for _ in range(6):
                     placeholder.markdown(f"<h2 style='text-align: center; color: #999;'>🎲 {random.choice(palabras_disponibles)}</h2>", unsafe_allow_html=True)
                     time.sleep(0.08)
@@ -197,3 +197,17 @@ with tab_juego:
             
             st.write("")
             if st.session_state.estado_final == "LOGRADO":
+                st.markdown("<div style='background-color: #d4edda; padding: 20px; border-radius: 10px; border: 2px solid #c3e6cb;'><h2 style='text-align: center; color: #155724; font-size: 45px; margin:0;'>🎉 ¡Logrado!</h2></div>", unsafe_allow_html=True)
+            elif st.session_state.estado_final == "NO_LOGRADO":
+                st.markdown("<div style='background-color: #f8d7da; padding: 20px; border-radius: 10px; border: 2px solid #f5c6cb;'><h2 style='text-align: center; color: #721c24; font-size: 45px; margin:0;'>❌ ¡No logrado!</h2></div>", unsafe_allow_html=True)
+
+    # 5. HISTORIAL DETALLADO POR CATEGORÍAS
+    st.divider()
+    st.markdown("### 📋 Historial de Palabras Usadas en esta sesión")
+    if st.session_state.historial:
+        cols_historial = st.columns(4)
+        for indice, (p, cat, dif) in enumerate(st.session_state.historial):
+            with cols_historial[indice % 4]:
+                st.markdown(f"**{indice + 1}.** `{p}` ({cat} - {dif})")
+    else:
+        st.caption("Aún no hay registros en la sesión actual.")
