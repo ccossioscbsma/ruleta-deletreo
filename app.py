@@ -22,7 +22,7 @@ if "historial" not in st.session_state:
     st.session_state.historial = []
 
 # 3. Controles principales
-col1, col2 = st.columns()
+col1, col2 = st.columns(2)
 
 with col1:
     # Botón para girar la ruleta
